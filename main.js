@@ -134,7 +134,7 @@ class Back {
     }
   }
   const acc = e => {
-    const a = e.accelerationIncludingGravity
+    const a = e.acceleration
     const v = a.x * a.x + a.y * a.y + a.z * a.z
     if (v > 1) {
       event()
