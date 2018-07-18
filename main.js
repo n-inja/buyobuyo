@@ -133,10 +133,17 @@ class Back {
       prop.buyoR += 1
     }
   }
+  const acc = e => {
+    const a = e.accelerationIncludingGravity
+    const v = a.x * a.x + a.y * a.y + a.z * a.z
+    if (v > 1) {
+      event()
+    }
+  }
   window.addEventListener('mousemove', event)
   window.addEventListener('click', event)
   window.addEventListener('keydown', event)
-  window.addEventListener('devicemotion', event)
+  window.addEventListener('devicemotion', acc)
   const easeSin = (time) => {
     const lambda = 1 / prop.buyoR
     const delta = (time - prop.buyo) / 1000
