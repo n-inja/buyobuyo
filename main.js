@@ -20,6 +20,25 @@ class Circle {
     ctx.translate(-this.x, -this.y)
   }
 }
+class Back {
+  constructor(x, y, size) {
+    this.x = x
+    this.y = y
+    this.alpha = 0.0
+    this.beta = 0.01
+    this.size = size
+  }
+  update (delta) {
+    this.alpha += this.beta * delta
+    this.beta += this.beta * delta
+    this.size *= (1 + delta)
+  }
+  draw (ctx, img) {
+    ctx.globalAlpha = Math.max(1.0 - this.alpha, 0)
+    ctx.drawImage(img, this.x - this.size / 2, this.y - this.size / 2, this.size, this.size)
+    ctx.globalAlpha = 1.0
+  }
+}
 
 (() => {
   if (window.flag) return
@@ -63,15 +82,23 @@ class Circle {
   const shades = new Array(10)
   let now = 0
   for (let i = 0; i < 10; i++) shades[i] = {x: 0, y: 0, hx: 0, hy: 0, angle: 0}
-  const circles = []
+  const circles = [], backs = []
   const draw = () => {
     ctx.clearRect(0, 0, WIDTH, HEIGHT)
+    for (let i = backs.length; i > 0; i--) {
+      const b = backs.shift()
+      b.draw(ctx, img)
+      if (b.alpha < 1) backs.push(b)
+    }
     for (let i = circles.length; i > 0; i--) {
       const c = circles.shift()
       c.draw(ctx, img2)
       if (c.y <= HEIGHT + c.r) circles.push(c)
     }
     ctx.translate(parseInt(WIDTH / 2), parseInt(HEIGHT / 2))
+    if (Math.random() * 1000 < prop.rv * prop.rv) {
+      backs.push(new Back(Math.random() * WIDTH, Math.random() * HEIGHT, (Math.random() + 1) * 10))
+    }
     if (prop.rv > 3) {
       const mass = prop.rv > 6 ? 5 : 3
       for (let i = mass; i > 0; i--) {
@@ -109,6 +136,7 @@ class Circle {
   window.addEventListener('mousemove', event)
   window.addEventListener('click', event)
   window.addEventListener('keydown', event)
+  window.addEventListener('devicemotion', event)
   const easeSin = (time) => {
     const lambda = 1 / prop.buyoR
     const delta = (time - prop.buyo) / 1000
@@ -125,6 +153,7 @@ class Circle {
   const main = () => {
     const delta = (Date.now() - lastTime) / 1000
     circles.forEach(c => c.update(delta))
+    backs.forEach(b => b.update(delta))
     prop.angle += prop.rv * delta
     prop.rv -= prop.rv * delta / 10
     prop.buyoR = Math.pow(prop.buyoR, 1 - delta)
